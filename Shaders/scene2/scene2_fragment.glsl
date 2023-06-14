@@ -997,90 +997,15 @@ void rotateCube(inout vec3 p)
 /*
     Given the point p returns the closest object
 */
-vec2 closest_object(vec3 p)
-{
-    vec3 tmp, op = p;
-    // plane
-    float planeDist = fPlane(p, vec3(0, 1, 0), 14.0);
+vec2 closest_object(vec3 p){
+
+    float planeDist = fPlane(p, vec3(0, 1, 0), sin(p.x)*sin(p.z));
     float planeID = 6.0;
     vec2 plane = vec2(planeDist, planeID);
 
-    // cube
-//    vec3 pb = p;
-//    translateCube(pb);
-//    rotateCube(pb);
-//    float cubeDist = fBoxCheap(pb, vec3(cubeSize));
-//    float cubeID = 5.0;
-//    vec2 cube = vec2(cubeDist, cubeID);
-    
-    // pedestal
-    vec3 pp = p;
-    pp.y -= 25.4;
-    pMirrorOctant(pp.xz, vec2(80.0, 80.0));
-    pR(pp.xz, 0.1 * pp.y);
-    vec2 pedestal = getPedestal(pp);
-    // sphere
-    vec3 ps = p;
-    translateSphere(ps);
-    rotateSphere(ps);
-    pMirror(ps.x, 80.0);
-    pMirror(ps.z, 80.0);
-    float sphereDist = fSphere(ps, 6.0);
-    sphereDist += bump_mapping(texture4, ps, ps + sphereBumpFactor,
-                             sphereDist, sphereBumpFactor, sphereScale);
-    sphereDist += sphereBumpFactor;
-    float sphereID = 10.0;
-    vec2 sphere = vec2(sphereDist, sphereID);
-
-    // manipulation operators
-    pMirrorOctant(p.xz, vec2(80, 80));
-    pMirrorOctant(p.xz, vec2(80, 80));
-    pMirror(p.x, 20.0);
-    pMirrorOctant(p.xz, vec2(80, 80));
-    p.x = -abs(p.x) + 20;
-    pMirror(p.x, 20.0);
-    pMod1(p.z, 15);
-
-    // roof
-    vec3 pr = p;
-    pr.y -= 15.7;
-    pR(pr.xy, 0.6);
-    pr.x -= 18.0;
-    float roofDist = fBox2Cheap(pr.xy, vec2(20, 0.5));
-    roofDist -= bump_mapping(texture5, p, p - roofBumpFactor, roofDist, roofBumpFactor, roofScale);
-    roofDist += roofBumpFactor;
-    float roofID = 8.0;
-    vec2 roof = vec2(roofDist, roofID);
-
-    // box
-    float boxDist = fBoxCheap(p, vec3(3,9,4));
-    float boxID = 7.0;
-    vec2 box = vec2(boxDist, boxID);
-
-    // cylinder
-    vec3 pc = p;
-    pc.y -= 9.0;
-    float cylinderDist = fCylinder(pc.yxz, 4, 3);
-    float cylinderID = 7.0;
-    vec2 cylinder = vec2(cylinderDist, cylinderID);
-
-    // wall
-    float wallDist = fBox2Cheap(p.xy, vec2(1, 15));
-    wallDist -= bump_mapping(texture1, op, op + wallBumpFactor, wallDist, wallBumpFactor, wallScale);
-    wallDist += wallBumpFactor;
-    float wallID = 7.0;
-    vec2 wall = vec2(wallDist, wallID);
-
     // result
     vec2 res;
-    res = fOpUnionID(box, cylinder);
-    res = fOpDifferenceColumnsID(wall, res, 0.6, 3.0);
-    res = fOpUnionChamferID(res, roof, 0.6);
-    res = fOpUnionStairsID(res, plane, 4.0, 5.0);
-    res = fOpUnionID(res, sphere);
-    res = fOpUnionStairsID(res, pedestal, 4.0, 5.0);
-//    res = fOpUnionID(res, cube);
-    res = res;
+    res = fOpUnionID(res, plane);
     return res;
 }
 
@@ -1090,19 +1015,16 @@ vec2 closest_object(vec3 p)
  
     Note: If there is no hit object.x > MAX_DIST
 */
-vec2 ray_march(vec3 ro, vec3 rd)
-{
+vec2 ray_march(vec3 ro, vec3 rd){
     vec2 object = vec2(0.0); //The final object the ray lands on
     vec2 hit = vec2(0.0); //The current hit
     vec3 p = vec3(0.0);
-    for(int i = 0; i < MAX_STEPS; ++i)
-    {
+    for(int i = 0; i < MAX_STEPS; ++i){
         p = ro + object.x * rd;
         hit = closest_object(p);
         object.x += hit.x;
         object.y = hit.y;
-        if(abs(hit.x) < EPSILON || object.x > MAX_DIST)
-        {
+        if(abs(hit.x) < EPSILON || object.x > MAX_DIST){
             break;
         }
     }
@@ -1203,9 +1125,8 @@ vec3 get_material(vec3 p, float id, vec3 normal)
 
         // sphere
         case 10:
-            translateSphere(p);
-            rotateSphere(p);
-            rotateSphere(normal);
+            //rotateSphere(p);
+            //rotateSphere(normal);
             m = triplanar(texture4, p * sphereScale, normal);
             break;
 
@@ -1259,15 +1180,14 @@ vec3 render(vec3 ro, vec3 rd)
     vec3 background = vec3(0.5, 0.8, 0.9);
     
     //If there is a hit
-    if(object.x < MAX_DIST)
-    {
+    if(object.x < MAX_DIST){
         vec3 p = ro + object.x * rd;
         col += get_light(p, rd, object.y);
+        
         //Fog
-        col = mix(col, background, 1.0 - exp(-1e-6 * object.x * object.x));
+        //col = mix(col, background, 1.0 - exp(-1e-6 * object.x * object.x));
     }
-    else
-    {
+    else{
         col += background - max(0.9 * rd.y, 0.0);
     }
    

@@ -291,8 +291,8 @@ int main()
     
     GLuint quad = screenSizeQuad();
     Scene scene;
-    scene.shader = Shader("Shaders/scene1/scene1_vertex.glsl",
-                           "Shaders/scene1/scene1_fragment.glsl");
+    scene.shader = Shader("Shaders/scene2/scene2_vertex.glsl",
+                           "Shaders/scene2/scene2_fragment.glsl");
     
     std::vector<const char*> texturePaths =
     {
