@@ -192,7 +192,7 @@ int setupDependencies()
     #endif
 
 	//Create the window object
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Window", NULL, NULL);
+	window = glfwCreateWindow(800, 600, "OpenGL Window", NULL, NULL);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create the window" << std::endl;
@@ -209,7 +209,7 @@ int setupDependencies()
     }
     
 	//Specify the actual window rectangle for renderings.
-	glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
+	glViewport(0, 0, 1600, 1200);
 
 	//Register our size callback funtion to GLFW.
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
@@ -272,7 +272,7 @@ void renderScreenSizeQuad(GLuint VAO, Shader shader)
     shader.use();
     glm::vec3 camPos = camera.getPosition();
     //Uniforms
-    shader.setVec2("resolution", glm::vec2(SCR_WIDTH, SCR_HEIGHT));
+    shader.setVec2("resolution", glm::vec2(800, 600));
     shader.setVec3("camera_pos", camPos);
     shader.setVec3("front", camera.getFront());
     shader.setVec3("right", camera.getRight());

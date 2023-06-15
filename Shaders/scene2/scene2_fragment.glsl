@@ -860,17 +860,8 @@ const int MAX_STEPS = 256;
 const float MAX_DIST = 1500;
 const float EPSILON = 0.001;
 
-float cubeSize = 6.0;
+float cubeSize = 8.0;
 float cubeScale = 1.0 / cubeSize;
-float roofScale = 0.15;
-float pedestalScale = 0.3;
-float floorScale = 0.15;
-float sphereScale = 0.2;
-float wallScale = 0.12;
-
-float roofBumpFactor = 0.31;
-float sphereBumpFactor = 0.21;
-float wallBumpFactor = 0.06;
 
 
 /*
@@ -982,30 +973,50 @@ void rotateSphere(inout vec3 p)
     pR(p.xz, 0.3 * time);
 }
 
-void translateCube(inout vec3 p)
-{
-    p.y -= 2.5;
-    p.xz += 1.5;
+void translateCube(inout vec3 p){
+    p.y -= 4.0;
+    p.x -= 4.0;
+    p.z += 16.0;
+    //p.xz += 1.5;
 }
 
-void rotateCube(inout vec3 p)
-{
+void rotateCube(inout vec3 p){
     pR(p.yz, PI / 4);
     pR(p.xz, time);
+}
+
+void sponge(){
+    
 }
 
 /*
     Given the point p returns the closest object
 */
 vec2 closest_object(vec3 p){
-
-    float planeDist = fPlane(p, vec3(0, 1, 0), sin(p.x)*sin(p.z));
-    float planeID = 6.0;
-    vec2 plane = vec2(planeDist, planeID);
-
-    // result
+    
+    vec3 pb = p;
+    float boxID = 1.0;
+    float divisor = 3.0;
     vec2 res;
-    res = fOpUnionID(res, plane);
+    float boxDist = fBoxCheap(pb, vec3(cubeSize));
+    
+    for(int i = 0 ; i<1; ++i){
+        float differenceX_BoxDist = fBoxCheap(pb, vec3(1.001*cubeSize,cubeSize/divisor,cubeSize/divisor));
+        float differenceY_BoxDist = fBoxCheap(pb, vec3(cubeSize/divisor,1.001*cubeSize,cubeSize/divisor));
+        float differenceZ_BoxDist = fBoxCheap(pb, vec3(cubeSize/divisor,cubeSize/divisor,1.001*cubeSize));
+        
+        vec2 box = vec2(boxDist, boxID);
+        vec2 box_X = vec2(differenceX_BoxDist, boxID);
+        vec2 box_Y = vec2(differenceY_BoxDist, boxID);
+        vec2 box_Z = vec2(differenceZ_BoxDist, boxID);
+
+        res = fOpUnionID(res, box);
+        res = fOpDifferenceID(res,box_X);
+        res = fOpDifferenceID(res,box_Y);
+        res = fOpDifferenceID(res,box_Z);
+        
+        divisor = divisor/3;
+    }
     return res;
 }
 
@@ -1025,6 +1036,7 @@ vec2 ray_march(vec3 ro, vec3 rd){
         object.x += hit.x;
         object.y = hit.y;
         if(abs(hit.x) < EPSILON || object.x > MAX_DIST){
+            
             break;
         }
     }
@@ -1085,7 +1097,8 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             m = vec3(0.9, 0.0, 0.0); break;
 
         case 2:
-            m = vec3(0.2 + 0.4 * mod(floor(p.x) + floor(p.z), 2.0)); break;
+            m = vec3(0.2 + 0.4 * mod(floor(p.x) + floor(p.z), 2.0));
+            break;
 
         case 3:
             m = vec3(0.7, 0.8, 0.9); break;
@@ -1102,39 +1115,6 @@ vec3 get_material(vec3 p, float id, vec3 normal)
 //          rotateCube(normal);
             m = triplanar(texture0, p * cubeScale, normal);
             break;
-
-        // floor
-        case 6:
-            m = triplanar(texture0, p * floorScale, normal);
-            break;
-
-        // walls
-        case 7:
-            m = triplanar(texture1, p * wallScale, normal);
-            break;
-
-        // roof
-        case 8:
-            m = triplanar(texture2, p * roofScale, normal);
-            break;
-
-        // pedestal
-        case 9:
-            m = triplanar(texture3, p * pedestalScale, normal);
-            break;
-
-        // sphere
-        case 10:
-            //rotateSphere(p);
-            //rotateSphere(normal);
-            m = triplanar(texture4, p * sphereScale, normal);
-            break;
-
-        // roof bump
-        case 11:
-            m = triplanar(texture5, p * roofScale, normal);
-            break;
-
         default:
             m = vec3(0.4);
             break;
