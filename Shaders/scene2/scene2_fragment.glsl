@@ -973,11 +973,10 @@ void rotateSphere(inout vec3 p)
     pR(p.xz, 0.3 * time);
 }
 
-void translateCube(inout vec3 p){
-    p.y -= 4.0;
-    p.x -= 4.0;
-    p.z += 16.0;
-    //p.xz += 1.5;
+void translateCube(inout vec3 p, int xi, int yi, int zi){
+    p.x += xi*cubeSize*2;
+    p.y += yi*cubeSize*2;
+    p.z += zi*cubeSize*2;
 }
 
 void rotateCube(inout vec3 p){
@@ -998,25 +997,22 @@ vec2 closest_object(vec3 p){
     float boxID = 1.0;
     float divisor = 3.0;
     vec2 res;
-    float boxDist = fBoxCheap(pb, vec3(cubeSize));
+    float tempRes = 100000000;
     
-    for(int i = 0 ; i<1; ++i){
-        float differenceX_BoxDist = fBoxCheap(pb, vec3(1.001*cubeSize,cubeSize/divisor,cubeSize/divisor));
-        float differenceY_BoxDist = fBoxCheap(pb, vec3(cubeSize/divisor,1.001*cubeSize,cubeSize/divisor));
-        float differenceZ_BoxDist = fBoxCheap(pb, vec3(cubeSize/divisor,cubeSize/divisor,1.001*cubeSize));
-        
-        vec2 box = vec2(boxDist, boxID);
-        vec2 box_X = vec2(differenceX_BoxDist, boxID);
-        vec2 box_Y = vec2(differenceY_BoxDist, boxID);
-        vec2 box_Z = vec2(differenceZ_BoxDist, boxID);
-
-        res = fOpUnionID(res, box);
-        res = fOpDifferenceID(res,box_X);
-        res = fOpDifferenceID(res,box_Y);
-        res = fOpDifferenceID(res,box_Z);
-        
-        divisor = divisor/3;
+    for(int xi = -1 ; xi<2; ++xi){
+        for(int yi = -1 ; yi<2; ++yi){
+            if(xi == 0 && yi == 0){continue;}
+            for(int zi = -1 ; zi<2; ++zi){
+                if((xi == 0 && zi == 0) || (yi == 0 && zi == 0)){continue;}
+                vec3 pb = p;
+                translateCube(pb, xi, yi, zi);
+                tempRes = min(tempRes,fBoxCheap(pb, vec3(cubeSize)));
+            }
+        }
     }
+    
+    res = fOpUnionID(res, vec2(tempRes, boxID));
+        
     return res;
 }
 
