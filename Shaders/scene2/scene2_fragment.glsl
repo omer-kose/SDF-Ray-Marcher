@@ -860,8 +860,7 @@ const int MAX_STEPS = 256;
 const float MAX_DIST = 1500;
 const float EPSILON = 0.001;
 
-float cubeSize = 8.0;
-float cubeScale = 1.0 / cubeSize;
+float cubeScale = 1.0;
 
 
 /*
@@ -973,19 +972,47 @@ void rotateSphere(inout vec3 p)
     pR(p.xz, 0.3 * time);
 }
 
-void translateCube(inout vec3 p, int xi, int yi, int zi){
-    p.x += xi*cubeSize*2;
-    p.y += yi*cubeSize*2;
-    p.z += zi*cubeSize*2;
-}
-
 void rotateCube(inout vec3 p){
     pR(p.yz, PI / 4);
     pR(p.xz, time);
 }
 
-void sponge(){
-    
+void translateCube(inout vec3 p, int xi, int yi, int zi, float cubeSize){
+    p.x += xi*cubeSize*2;
+    p.y += yi*cubeSize*2;
+    p.z += zi*cubeSize*2;
+}
+
+float sponge2(vec3 p,float cubeSize){
+    float tempRes = 100000000;
+    for(int xi = -1 ; xi<2; ++xi){
+        for(int yi = -1 ; yi<2; ++yi){
+            if(xi == 0 && yi == 0){continue;}
+            for(int zi = -1 ; zi<2; ++zi){
+                if((xi == 0 && zi == 0) || (yi == 0 && zi == 0)){continue;}
+                vec3 pb = p;
+                translateCube(pb, xi, yi, zi, cubeSize);
+                tempRes = min(tempRes,fBoxCheap(pb, vec3(cubeSize)));
+            }
+        }
+    }
+    return tempRes;
+}
+
+float sponge(vec3 p,float cubeSize){
+    float tempRes = 100000000;
+    for(int xi = -1 ; xi<2; ++xi){
+        for(int yi = -1 ; yi<2; ++yi){
+            if(xi == 0 && yi == 0){continue;}
+            for(int zi = -1 ; zi<2; ++zi){
+                if((xi == 0 && zi == 0) || (yi == 0 && zi == 0)){continue;}
+                vec3 pb = p;
+                translateCube(pb, xi, yi, zi, cubeSize);
+                tempRes = min(tempRes,sponge2(pb,cubeSize/3));
+            }
+        }
+    }
+    return tempRes;
 }
 
 /*
@@ -993,23 +1020,9 @@ void sponge(){
 */
 vec2 closest_object(vec3 p){
     
-    vec3 pb = p;
     float boxID = 1.0;
-    float divisor = 3.0;
     vec2 res;
-    float tempRes = 100000000;
-    
-    for(int xi = -1 ; xi<2; ++xi){
-        for(int yi = -1 ; yi<2; ++yi){
-            if(xi == 0 && yi == 0){continue;}
-            for(int zi = -1 ; zi<2; ++zi){
-                if((xi == 0 && zi == 0) || (yi == 0 && zi == 0)){continue;}
-                vec3 pb = p;
-                translateCube(pb, xi, yi, zi);
-                tempRes = min(tempRes,fBoxCheap(pb, vec3(cubeSize)));
-            }
-        }
-    }
+    float tempRes = sponge(p,8);
     
     res = fOpUnionID(res, vec2(tempRes, boxID));
         
