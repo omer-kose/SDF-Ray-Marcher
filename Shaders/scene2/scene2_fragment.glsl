@@ -1030,11 +1030,11 @@ vec2 closest_object(vec3 p){
     
     vec2 res;
     vec3 p_sponge = p;
+    pMod1(p_sponge.z,20);
     
-    float tempRes = sponge(p_sponge,64);
+    float tempRes = sponge(p_sponge,15);
     
     res = fOpUnionID(res, vec2(tempRes, boxID));
-        
     return res;
 }
 
@@ -1143,7 +1143,7 @@ vec3 get_material(vec3 p, float id, vec3 normal)
 
 vec3 get_light(vec3 p, vec3 rd, float id)
 {
-    vec3 light_pos = vec3(20.0, 40.0, 30.0);
+    vec3 light_pos = vec3(200.0, 400.0, 300.0);
     vec3 L = normalize(light_pos - p);
     vec3 N = get_normal(p);
     vec3 V = -rd;
