@@ -24,7 +24,7 @@
 
 
 //Camera
-Camera camera(glm::vec3(5.0f, 5.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 4.0f));
 
 //Time parameters
 double deltaTime = 0.0;

@@ -983,39 +983,26 @@ void translateCube(inout vec3 p, int xi, int yi, int zi, float cubeSize){
     p.z += zi*cubeSize*2;
 }
 
+const mat3 ma = mat3( 0.60, 0.00,  0.80,
+                      0.00, 1.00,  0.00,
+                     -0.80, 0.00,  0.60 );
+
 float maxcomp(in vec3 p ) { return max(p.x,max(p.y,p.z));}
-float sdBox( vec3 p, vec3 b )
-{
+float sdBox( vec3 p, vec3 b ){
     vec3  di = abs(p) - b;
     float mc = maxcomp(di);
     return min(mc,length(max(di,0.0)));
 }
 
-vec2 iBox( in vec3 ro, in vec3 rd, in vec3 rad )
-{
-    vec3 m = 1.0/rd;
-    vec3 n = m*ro;
-    vec3 k = abs(m)*rad;
-    vec3 t1 = -n - k;
-    vec3 t2 = -n + k;
-    return vec2( max( max( t1.x, t1.y ), t1.z ),
-                 min( min( t2.x, t2.y ), t2.z ) );
-}
-
-const mat3 ma = mat3( 0.60, 0.00,  0.80,
-                      0.00, 1.00,  0.00,
-                     -0.80, 0.00,  0.60 );
-float map( in vec3 p )
-{
-    float d = sdBox(p,vec3(1.0));
+float sponge(in vec3 p, float cubeSize){
+    float d = sdBox(p,vec3(cubeSize));
     vec4 res = vec4( d, 1.0, 0.0, 0.0 );
 
     float ani = smoothstep( -0.2, 0.2, -cos(0.5) );
     float off = 1.5*sin( 0.01 );
     
-    float s = 1.0;
-    for( int m=0; m<4; m++ )
-    {
+    float s = 1.0/cubeSize;
+    for( int m=0; m<6; m++ ){
         p = mix( p, ma*(p+off), ani );
        
         vec3 a = mod( p*s, 2.0 )-1.0;
@@ -1026,13 +1013,11 @@ float map( in vec3 p )
         float dc = max(r.z,r.x);
         float c = (min(da,min(db,dc))-1.0)/s;
 
-        if( c>d )
-        {
+        if( c>d ){
           d = c;
           res = vec4( d, min(res.y,0.2*da*db*dc), (1.0+float(m))/4.0, 0.0 );
         }
     }
-
     return res.x;
 }
 
@@ -1042,8 +1027,11 @@ float map( in vec3 p )
 vec2 closest_object(vec3 p){
     
     float boxID = 1.0;
+    
     vec2 res;
-    float tempRes = map(p);
+    vec3 p_sponge = p;
+    
+    float tempRes = sponge(p_sponge,64);
     
     res = fOpUnionID(res, vec2(tempRes, boxID));
         
