@@ -1012,7 +1012,7 @@ float sponge(in vec3 p, float cubeSize){
     float off = 1.5*sin( 0.01 );
     
     float s = 1.0/cubeSize;
-    for( int m=0; m<6; m++ ){
+    for( int m=0; m<5; m++ ){
         p = mix( p, ma*(p+off), ani );
        
         vec3 a = mod( p*s, 2.0 )-1.0;
@@ -1068,8 +1068,10 @@ vec2 closest_object(vec3 p){
     vec3 p_sponge = p;
 
     float noiseVal = noise(p*0.01)*2;
-    shearX(p_sponge,noiseVal/7);
-    shearZ(p_sponge,noiseVal/11);
+    shearX(p_sponge,noiseVal/11);
+    shearZ(p_sponge,noiseVal/13);
+    boxID += floor(abs(p_sponge.x+30)/60)/1000;
+    
     pMod1(p_sponge.z,30);
     pMod2(p_sponge.xy,vec2(60.0));
     //pR(p_sponge.xy, noiseVal);
@@ -1173,9 +1175,10 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             break;
         case 6:
             float seed = p.z/97;
-            m = vec3(clamp(sin(seed+23.038),0.0,0.9),
-                     clamp(sin(seed+14.660),0.0,0.9),
-                     clamp(sin(seed)       ,0.0,0.9));
+            float x_modifier = fract(id)*2000;
+            m = vec3(clamp(sin(seed + x_modifier +23.038),0.1,0.9),
+                     clamp(sin(seed + x_modifier +14.660),0.1,0.9),
+                     clamp(sin(seed + x_modifier )       ,0.1,0.9));
             break;
         default:
             m = vec3(0.4);
