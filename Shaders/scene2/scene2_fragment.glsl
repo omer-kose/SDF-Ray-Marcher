@@ -994,6 +994,16 @@ float sdBox( vec3 p, vec3 b ){
     return min(mc,length(max(di,0.0)));
 }
 
+void shearX(inout vec3 p, float factor) {
+  p.y += factor * p.x;
+  p.z += factor * p.x;
+}
+
+void shearZ(inout vec3 p, float factor) {
+  p.x += factor * p.z;
+  p.y += factor * p.z;
+}
+
 float sponge(in vec3 p, float cubeSize){
     float d = sdBox(p,vec3(cubeSize));
     vec4 res = vec4( d, 1.0, 0.0, 0.0 );
@@ -1057,9 +1067,12 @@ vec2 closest_object(vec3 p){
     vec2 res;
     vec3 p_sponge = p;
 
+    float noiseVal = noise(p*0.01)*2;
+    shearX(p_sponge,noiseVal/7);
+    shearZ(p_sponge,noiseVal/11);
     pMod1(p_sponge.z,30);
     pMod2(p_sponge.xy,vec2(60.0));
-    pR(p_sponge.xy, noise(p*0.01)*2);
+    //pR(p_sponge.xy, noiseVal);
     
     float tempRes = sponge(p_sponge,15);
     
@@ -1160,9 +1173,9 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             break;
         case 6:
             float seed = p.z/97;
-            m = vec3(clamp(cos(seed+23.038),0.0,0.9),
-                     clamp(cos(seed+14.660),0.0,0.9),
-                     clamp(cos(seed)       ,0.0,0.9));
+            m = vec3(clamp(sin(seed+23.038),0.0,0.9),
+                     clamp(sin(seed+14.660),0.0,0.9),
+                     clamp(sin(seed)       ,0.0,0.9));
             break;
         default:
             m = vec3(0.4);
