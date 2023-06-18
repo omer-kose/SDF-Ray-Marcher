@@ -1070,7 +1070,7 @@ vec2 closest_object(vec3 p){
     float noiseVal = noise(p*0.01)*2;
     shearX(p_sponge,noiseVal/11);
     shearZ(p_sponge,noiseVal/13);
-    boxID += floor(abs(p_sponge.x+30)/60)/1000;
+    boxID += floor((abs(p_sponge.x)+30)/60)/1000;
     
     pMod1(p_sponge.z,30);
     pMod2(p_sponge.xy,vec2(60.0));
