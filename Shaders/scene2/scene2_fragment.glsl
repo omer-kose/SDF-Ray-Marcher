@@ -942,26 +942,6 @@ float fDisplace(vec3 p)
 }
 
 
-vec2 getPedestal(vec3 p)
-{
-    float ID = 7.0;
-    float resDist;
-    // box 1
-    p.y += 13.8;
-    float box1 = fBoxCheap(p, vec3(8, 0.4, 8));
-    // box 2
-    p.y -= 6.4;
-    float box2 = fBoxCheap(p, vec3(7, 6, 7));
-    // box 3
-    pMirrorOctant(p.zx, vec2(7.5, 7.5));
-    float box3 = fBoxCheap(p, vec3(5, 4, 1));
-    // res
-    resDist = box1;
-    resDist = min(resDist, box2);
-    resDist = fOpDifferenceColumns(resDist, box3, 1.9, 10.0);
-    return vec2(resDist, ID);
-}
-
 void translateSphere(inout vec3 p)
 {
     p.y -= 35.4;

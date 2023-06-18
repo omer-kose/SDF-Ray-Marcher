@@ -24,7 +24,7 @@
 
 
 //Camera
-Camera camera(glm::vec3(0.0f, 0.0f, 4.0f));
+Camera camera(glm::vec3(0.0f, 100.0f, 4.0f));
 
 //Time parameters
 double deltaTime = 0.0;
@@ -291,8 +291,8 @@ int main()
     
     GLuint quad = screenSizeQuad();
     Scene scene;
-    scene.shader = Shader("Shaders/scene2/scene2_vertex.glsl",
-                           "Shaders/scene2/scene2_fragment.glsl");
+    scene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
+                           "Shaders/scene3/scene3_fragment.glsl");
     
     std::vector<const char*> texturePaths =
     {
