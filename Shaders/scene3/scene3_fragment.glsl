@@ -1012,7 +1012,7 @@ vec4 sdf_union(vec4 a, vec4 b) {
     return a.w < b.w ? a : b;
 }
 
-float terrain(vec3 pos) {
+float terrain(vec3 pos, inout float terrain_height) {
     float height = (
         noise2D(pos.xz * 0.002) * 5
         + noise2D(pos.xz * 0.02) * 0.5
@@ -1021,6 +1021,7 @@ float terrain(vec3 pos) {
     ) * 30.0;
     float ao = min(pow(noise2D(pos.xz * 0.02) * 2.0, 1.5), 1.0);
     
+    terrain_height = height;
     return pos.y - height;
 }
 
@@ -1040,10 +1041,24 @@ vec2 closest_object(vec3 p){
     vec2 res;
     
     //float boxDistance = sdBox(p,vec3(1.0,1.0,1.0));
-    float terrainDistance = terrain(p);
+    float terrain_height;
+    float terrainDistance = terrain(p, terrain_height);
     float planeDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
     
+    vec3 ps = p;
+    float r = (noise2D(p.xy) + 4)/2;
+    ps.y -= terrain_height + r;
+    pMod2(ps.xz, vec2(6.0));
+    pR(ps.xz, 0.1 * ps.y);
+    float sphere_dist = fCone(ps, r, 3*r);
+    float sphereID = 7.0;
+    vec2 sphere = vec2(sphere_dist, sphereID);
+    
     res = fOpUnionID(vec2(terrainDistance, terrainID),vec2(planeDistance, planeID));
+    if(terrain_height > 10.0 && terrain_height < 30.0)
+    {
+        res = fOpUnionID(res, sphere);
+    }
     return res;
 }
 
@@ -1139,13 +1154,20 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             m = triplanar(texture0, p * cubeScale, normal);
             break;
         case 6:
-            vec3 forest = vec3(0.3, 0.9, 0.4);
+            vec3 sand = vec3(1.0, 0.5, 0.2);
+            vec3 forest = vec3(0.1, 0.26, 0.14);
             vec3 rock = vec3(0.5, 0.23, 0.1);
+            vec3 snow = vec3(0.80 , 0.85, 0.9);
             //vec3 rock_or_forest = (noise2D(p.xz * 0.019) > 0.5) ? rock : forest;
             //Rock and Snow
-            m = mix(rock, vec3(0.80 , 0.85, 0.9), smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
+            m = mix(rock, snow, smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
+            //Forest
+            m = mix(forest, m, smoothstep(10.0, 60.0, p.y));
             //Sand
-            m = mix(vec3(1.0, 0.5, 0.2), m, smoothstep(0.0, 10.0, p.y));
+            m = mix(sand, m, smoothstep(0.0, 10.0, p.y));
+            break;
+        case 7:
+            m = vec3(0.1, 0.36, 0.14);
             break;
         default:
             m = vec3(0.4);
