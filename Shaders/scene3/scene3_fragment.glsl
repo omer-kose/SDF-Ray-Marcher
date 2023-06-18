@@ -857,7 +857,7 @@ uniform sampler2D texture5; //roof bump
 
 
 const int MAX_STEPS = 256;
-const float MAX_DIST = 1500;
+const float MAX_DIST = 15000;
 const float EPSILON = 0.001;
 
 float cubeScale = 1.0;
@@ -989,6 +989,25 @@ float noise2D(vec2 p){
     return res*res;
 }
 
+float fbm(vec2 p)
+{
+    int numOctaves = 2;
+    float lacunarity = 1.0f;
+    float weight = 1.0;
+    float ret = 0.0;
+    float frequency = 1.0f;
+    // fbm
+    for (int i = 0; i < numOctaves; i++)
+    {
+        ret += weight * noise2D(frequency * p);
+        p *= 2.0;
+        weight *= 0.5;
+        frequency *= lacunarity;
+    }
+    return clamp(ret, 0.0, 1.0);
+}
+
+
 vec4 sdf_union(vec4 a, vec4 b) {
     return a.w < b.w ? a : b;
 }
@@ -1022,7 +1041,7 @@ vec2 closest_object(vec3 p){
     
     //float boxDistance = sdBox(p,vec3(1.0,1.0,1.0));
     float terrainDistance = terrain(p);
-    float planeDistance = fPlane(p,vec3(0.0,1.0,0.0),noise2D(p.xz+vec2(time,time))/10);
+    float planeDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
     
     res = fOpUnionID(vec2(terrainDistance, terrainID),vec2(planeDistance, planeID));
     return res;
@@ -1108,7 +1127,8 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             break;
 
         case 3:
-            m = vec3(0.35, 0.4, 0.95); break;
+            m = vec3(0.18,0.59,0.98);
+            break;
 
         case 4:
             vec2 i = step(fract(0.5 * p.xz), vec2(1.0 / 10.0));
@@ -1119,7 +1139,13 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             m = triplanar(texture0, p * cubeScale, normal);
             break;
         case 6:
-            m = mix(vec3(1.0, 0.5, 0.2), vec3(0.8 , 0.85, 0.9), (p.y + noise2D(p.xz))/90 );
+            vec3 forest = vec3(0.3, 0.9, 0.4);
+            vec3 rock = vec3(0.5, 0.23, 0.1);
+            //vec3 rock_or_forest = (noise2D(p.xz * 0.019) > 0.5) ? rock : forest;
+            //Rock and Snow
+            m = mix(rock, vec3(0.80 , 0.85, 0.9), smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
+            //Sand
+            m = mix(vec3(1.0, 0.5, 0.2), m, smoothstep(0.0, 10.0, p.y));
             break;
         default:
             m = vec3(0.4);

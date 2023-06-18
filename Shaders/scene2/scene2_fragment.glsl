@@ -985,7 +985,7 @@ void shearZ(inout vec3 p, float factor) {
 }
 
 float sponge(in vec3 p, float cubeSize){
-    float d = sdBox(p,vec3(cubeSize));
+    float d = fBoxCheap(p,vec3(cubeSize));
     vec4 res = vec4( d, 1.0, 0.0, 0.0 );
 
     float ani = smoothstep( -0.2, 0.2, -cos(0.5) );
