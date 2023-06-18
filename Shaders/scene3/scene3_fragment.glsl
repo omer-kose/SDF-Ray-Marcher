@@ -382,6 +382,36 @@ float fCone(vec3 p, float radius, float height) {
     return d;
 }
 
+float pyramid(vec3 position, float halfRadius) {
+    position.xz = abs(position.xz);
+    
+    // bottom
+    float s1 = abs(position.y) - halfRadius;
+    vec3 base = vec3(max(position.x - halfRadius, 0.0), abs(position.y + halfRadius), max(position.z - halfRadius, 0.0));
+    float d1 = dot(base, base);
+   
+    vec3 q = position - vec3(halfRadius, -halfRadius, halfRadius);
+    vec3 end = vec3(-halfRadius, 2.0 * halfRadius, -halfRadius);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+   
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
 //
 // "Generalized Distance Functions" by Akleman and Chen.
 // see the Paper at https://www.viz.tamu.edu/faculty/ergun/research/implicitmodeling/papers/sm99.pdf
@@ -1025,9 +1055,16 @@ float terrain(vec3 pos, inout float terrain_height) {
     return pos.y - height;
 }
 
-vec3 sdf_col(vec3 pos, vec3 norm) {
-    float ao = min(noise2D(pos.xy * 0.1) * 2.0, 1.0);
-    return ao * mix(vec3(1.0, 0.5, 0.2), vec3(0, 1, 0), clamp((-norm.z - 0.5) * 2.0, 0.0, 1.0));
+float tree(vec3 ps, float r){
+    // pR(ps.xz, 0.1 * ps.y);
+    float pyramid_dist = pyramid(ps, r);
+    ps *= 1.2;
+    ps.y -= 2;
+    pyramid_dist = min(pyramid(ps, r),pyramid_dist);
+    ps *= 1.2;
+    ps.y -= 2;
+    pyramid_dist = min(pyramid(ps, r),pyramid_dist);
+    return pyramid_dist;
 }
 
 /*
@@ -1046,18 +1083,16 @@ vec2 closest_object(vec3 p){
     float planeDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
     
     vec3 ps = p;
-    float r = (noise2D(p.xy) + 4)/2;
+    float r = 2;
     ps.y -= terrain_height + r;
     pMod2(ps.xz, vec2(6.0));
-    pR(ps.xz, 0.1 * ps.y);
-    float sphere_dist = fCone(ps, r, 3*r);
-    float sphereID = 7.0;
-    vec2 sphere = vec2(sphere_dist, sphereID);
+    float tree_dist = tree(ps, r);
+    
+    float treeID = 7.0;
     
     res = fOpUnionID(vec2(terrainDistance, terrainID),vec2(planeDistance, planeID));
-    if(terrain_height > 10.0 && terrain_height < 30.0)
-    {
-        res = fOpUnionID(res, sphere);
+    if(terrain_height > 10.0 && terrain_height < 30.0){
+        res = fOpUnionID(res, vec2(tree_dist, treeID));
     }
     return res;
 }
@@ -1155,19 +1190,21 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             break;
         case 6:
             vec3 sand = vec3(1.0, 0.5, 0.2);
-            vec3 forest = vec3(0.1, 0.26, 0.14);
+            vec3 grass = vec3(0.1, 0.26, 0.14);
             vec3 rock = vec3(0.5, 0.23, 0.1);
             vec3 snow = vec3(0.80 , 0.85, 0.9);
             //vec3 rock_or_forest = (noise2D(p.xz * 0.019) > 0.5) ? rock : forest;
             //Rock and Snow
             m = mix(rock, snow, smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
             //Forest
-            m = mix(forest, m, smoothstep(10.0, 60.0, p.y));
+            m = mix(grass, m, smoothstep(10.0, 60.0, p.y));
             //Sand
             m = mix(sand, m, smoothstep(0.0, 10.0, p.y));
             break;
         case 7:
-            m = vec3(0.1, 0.36, 0.14);
+            vec3 tree = vec3(0.1, 0.36, 0.14);
+            vec3 snowLeaf = vec3(0.80 , 0.85, 0.9);
+            m = tree;
             break;
         default:
             m = vec3(0.4);
