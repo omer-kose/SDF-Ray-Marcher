@@ -1042,13 +1042,20 @@ vec4 sdf_union(vec4 a, vec4 b) {
     return a.w < b.w ? a : b;
 }
 
-float terrain(vec3 pos, inout float terrain_height) {
+float terrain(vec3 pos, inout float terrain_height, inout bool isVolcanic) {
     float height = (
         noise2D(pos.xz * 0.002) * 5
         + noise2D(pos.xz * 0.02) * 0.5
         + noise2D(pos.xz * 0.1) * 0.15
         - noise2D(pos.xz * 0.001) * 2.0
-    ) * 30.0;
+    ) * 39.0;
+    
+    float volcanic_altitude = height-110;
+    if(volcanic_altitude > 0 ) {
+        isVolcanic = true;
+        height -= volcanic_altitude*2;
+    }
+    
     float ao = min(pow(noise2D(pos.xz * 0.02) * 2.0, 1.5), 1.0);
     
     terrain_height = height;
@@ -1074,26 +1081,38 @@ vec2 closest_object(vec3 p){
     
     float terrainID = 6.0;
     float planeID = 3.0;
+    float treeID = 7.0;
+    float lavaID = 9.0;
     
     vec2 res;
     
     //float boxDistance = sdBox(p,vec3(1.0,1.0,1.0));
     float terrain_height;
-    float terrainDistance = terrain(p, terrain_height);
-    float planeDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
+    bool isVolcanic = false;
+    float terrainDistance = terrain(p, terrain_height,isVolcanic);
+    float seaDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
     
     vec3 ps = p;
+    vec3 ps2 = p;
+    
     float r = 2;
     ps.y -= terrain_height + r;
     pMod2(ps.xz, vec2(6.0));
     float tree_dist = tree(ps, r);
     
-    float treeID = 7.0;
     
-    res = fOpUnionID(vec2(terrainDistance, terrainID),vec2(planeDistance, planeID));
+    res = fOpUnionID(vec2(terrainDistance, terrainID),vec2(seaDistance, planeID));
     if(terrain_height > 10.0 && terrain_height < 30.0){
         res = fOpUnionID(res, vec2(tree_dist, treeID));
     }
+    
+    
+    ps2.y -= 107;
+    if(isVolcanic){
+        float lavaDistance = fPlane(ps2,vec3(0.0,1.0,0.0),0.0);
+        res = fOpUnionID(res, vec2(lavaDistance, lavaID));
+    }
+    
     return res;
 }
 
@@ -1189,13 +1208,14 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             m = triplanar(texture0, p * cubeScale, normal);
             break;
         case 6:
-            vec3 sand = vec3(1.0, 0.5, 0.2);
-            vec3 grass = vec3(0.1, 0.26, 0.14);
-            vec3 rock = vec3(0.5, 0.23, 0.1);
-            vec3 snow = vec3(0.80 , 0.85, 0.9);
+            const vec3 sand = vec3(1.0, 0.5, 0.2);
+            const vec3 grass = vec3(0.1, 0.26, 0.14);
+            const vec3 rock = vec3(0.5, 0.23, 0.1);
+            const vec3 snow = vec3(0.80 , 0.85, 0.9);
+            const vec3 ash = vec3(0.02 , 0.01, 0.0);
             //vec3 rock_or_forest = (noise2D(p.xz * 0.019) > 0.5) ? rock : forest;
             //Rock and Snow
-            m = mix(rock, snow, smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
+            m = mix(rock, ash, smoothstep(80.0 * ((3 + noise2D(p.xz))/4), 90.0, p.y));
             //Forest
             m = mix(grass, m, smoothstep(10.0, 60.0, p.y));
             //Sand
@@ -1205,6 +1225,13 @@ vec3 get_material(vec3 p, float id, vec3 normal)
             vec3 tree = vec3(0.1, 0.36, 0.14);
             vec3 snowLeaf = vec3(0.80 , 0.85, 0.9);
             m = tree;
+            break;
+        case 8:
+            float izo = step(fract(0.5 * p.y), 0.1);
+            m = mix(vec3(0.8,0.8,0.8),vec3(0.37, 0.12, 0.0),izo);
+            break;
+        case 9:
+            m = vec3(0.78,0.18,0.09);
             break;
         default:
             m = vec3(0.4);
