@@ -299,10 +299,7 @@ int main()
     terrainScene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
                            "Shaders/scene3/scene3_fragment.glsl");
     
-    scene = buildingScene;
-    
-    std::vector<const char*> texturePaths =
-    {
+    std::vector<const char*> buildingTexturePaths ={
         "textures/hex.png",  //floor
         "textures/white_marble1.png", //walls
         "textures/roof/texture3.jpg", //roof
@@ -311,9 +308,14 @@ int main()
         "textures/roof/height3.png" // roof bump
     };
     
-    scene.loadTextures(texturePaths);
+    std::vector<const char*> terrainTexturePaths ={
+        "textures/bubbleNoise.png",  //floor
+    };
+    
+    buildingScene.loadTextures(buildingTexturePaths);
+    terrainScene.loadTextures(terrainTexturePaths);
+    scene = terrainScene;
    
-     
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))

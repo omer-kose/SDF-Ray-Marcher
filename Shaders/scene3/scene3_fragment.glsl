@@ -878,13 +878,8 @@ uniform vec3 right;
 uniform vec3 up;
 uniform float time;
 //Textures
-uniform sampler2D texture0; // floor
-uniform sampler2D texture1; // walls
-uniform sampler2D texture2; // roof
-uniform sampler2D texture3; // pedestal
-uniform sampler2D texture4; // sphere
-uniform sampler2D texture5; //roof bump
-
+uniform sampler2D texture0; //bubbleNoise
+uniform sampler2D texture1;
 
 const int MAX_STEPS = 256;
 const float MAX_DIST = 15000;
@@ -1019,8 +1014,12 @@ float noise2D(vec2 p){
     return res*res;
 }
 
-float fbm(vec2 p)
-{
+float tex_noise(vec2 p){
+    float res = texture(texture0, p).x;
+    return res;
+}
+
+float fbm(vec2 p){
     int numOctaves = 2;
     float lacunarity = 1.0f;
     float weight = 1.0;
@@ -1056,8 +1055,6 @@ float terrain(vec3 pos, inout float terrain_height, inout bool isVolcanic) {
         height -= volcanic_altitude*2;
     }
     
-    float ao = min(pow(noise2D(pos.xz * 0.02) * 2.0, 1.5), 1.0);
-    
     terrain_height = height;
     return pos.y - height;
 }
@@ -1090,7 +1087,8 @@ vec2 closest_object(vec3 p){
     float terrain_height;
     bool isVolcanic = false;
     float terrainDistance = terrain(p, terrain_height,isVolcanic);
-    float seaDistance = fPlane(p,vec3(0.0,1.0,0.0),fbm(p.xz+vec2(time,time))/15);
+    float wave = fbm(p.xz+vec2(time,time));
+    float seaDistance = fPlane(p,vec3(0.0,1.0,0.0),wave/15);
     
     vec3 ps = p;
     vec3 ps2 = p;
@@ -1109,7 +1107,7 @@ vec2 closest_object(vec3 p){
     
     ps2.y -= 107;
     if(isVolcanic){
-        float lavaDistance = fPlane(ps2,vec3(0.0,1.0,0.0),0.0);
+        float lavaDistance = fPlane(ps2,vec3(0.0,1.0,0.0),wave/5);
         res = fOpUnionID(res, vec2(lavaDistance, lavaID));
     }
     
