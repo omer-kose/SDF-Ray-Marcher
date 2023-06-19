@@ -290,9 +290,16 @@ int main()
 	setupDependencies();
     
     GLuint quad = screenSizeQuad();
-    Scene scene;
-    scene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
+    Scene scene, buildingScene,fractalScene,terrainScene;
+    
+    buildingScene.shader = Shader("Shaders/scene1/scene1_vertex.glsl",
+                           "Shaders/scene1/scene1_fragment.glsl");
+    fractalScene.shader = Shader("Shaders/scene2/scene2_vertex.glsl",
+                           "Shaders/scene2/scene2_fragment.glsl");
+    terrainScene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
                            "Shaders/scene3/scene3_fragment.glsl");
+    
+    scene = buildingScene;
     
     std::vector<const char*> texturePaths =
     {
