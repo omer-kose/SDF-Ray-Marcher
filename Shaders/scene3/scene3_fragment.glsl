@@ -1024,11 +1024,11 @@ float fbm(vec2 p){
     float lacunarity = 1.0f;
     float weight = 1.0;
     float ret = 0.0;
-    float frequency = 1.0f;
+    float frequency = 0.2f;
     // fbm
     for (int i = 0; i < numOctaves; i++)
     {
-        ret += weight * noise2D(frequency * p);
+        ret += weight * tex_noise(frequency * p);
         p *= 2.0;
         weight *= 0.5;
         frequency *= lacunarity;
@@ -1107,7 +1107,7 @@ vec2 closest_object(vec3 p){
     
     ps2.y -= 107;
     if(isVolcanic){
-        float lavaDistance = fPlane(ps2,vec3(0.0,1.0,0.0),wave/5);
+        float lavaDistance = fPlane(ps2,vec3(0.0,1.0,0.0),wave/16);
         res = fOpUnionID(res, vec2(lavaDistance, lavaID));
     }
     
@@ -1302,4 +1302,5 @@ void main()
     //Gamma Correction
     col = pow(col, vec3(0.4545));
     FragColor = vec4(col, 1.0);
+    //FragColor = vec4(noise2D(gl_FragCoord.xy));
 }
