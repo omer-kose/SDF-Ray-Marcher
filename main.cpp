@@ -24,7 +24,7 @@
 
 
 //Camera
-Camera camera(glm::vec3(20.0f, 120.0f, 30.0f));
+Camera camera(glm::vec3(0.0f, 5.0f, 5.0f));
 
 //Time parameters
 double deltaTime = 0.0;
@@ -192,7 +192,7 @@ int setupDependencies()
     #endif
 
 	//Create the window object
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Window", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH/2, SCR_HEIGHT/2, "OpenGL Window", NULL, NULL);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create the window" << std::endl;
@@ -290,7 +290,7 @@ int main()
 	setupDependencies();
     
     GLuint quad = screenSizeQuad();
-    Scene scene, buildingScene,fractalScene,terrainScene;
+    Scene scene, buildingScene,fractalScene,terrainScene,tileScene;
     
     buildingScene.shader = Shader("Shaders/scene1/scene1_vertex.glsl",
                            "Shaders/scene1/scene1_fragment.glsl");
@@ -298,6 +298,8 @@ int main()
                            "Shaders/scene2/scene2_fragment.glsl");
     terrainScene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
                            "Shaders/scene3/scene3_fragment.glsl");
+    tileScene.shader = Shader("Shaders/scene4/scene4_vertex.glsl",
+                           "Shaders/scene4/scene4_fragment.glsl");
     
     std::vector<const char*> buildingTexturePaths ={
         "textures/hex.png",  //floor
@@ -309,12 +311,17 @@ int main()
     };
     
     std::vector<const char*> terrainTexturePaths ={
-        "textures/perlinNoise3.jpeg",  //floor
+        "textures/perlinNoise3.jpeg",
+    };
+    
+    std::vector<const char*> tileTexturePaths ={
+        "textures/perlinNoise3.jpeg",
     };
     
     buildingScene.loadTextures(buildingTexturePaths);
     terrainScene.loadTextures(terrainTexturePaths);
-    scene = buildingScene;
+    tileScene.loadTextures(tileTexturePaths);
+    scene = tileScene;
    
 	// render loop
 	// -----------
