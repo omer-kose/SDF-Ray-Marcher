@@ -1,6 +1,5 @@
-# CENG469_Term_Project
-# Ömer Köse - Gökcan Demiralp
-# Ray Marching with SDFs
+# Ray Marching with SDFs (CENG469_Term_Project)
+- Ömer Köse - Gökcan Demiralp
 
 Just by running the Makefile by using the regular "make" command the files compile
 After the executable can be run with the usual "./main" command
