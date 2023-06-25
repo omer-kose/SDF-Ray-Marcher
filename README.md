@@ -4,7 +4,7 @@
 # Compile and Run
 -Just by running the Makefile by using the regular "make" command the files compile
 
--After the executable can be run with the usual "./main" command
+-After that, the executable can be run with the usual "./main" command
 
 # Change the Scene
 -Then the hard-coded scene which is specified in the main.cpp file will be executed
@@ -16,7 +16,7 @@
 # Controls
 -The camera can be moved inside the scene by using the "WASD" keys
 
--The while pressing the Left-Mouse-Button the viewing-angle/perspective can be changed
+-While pressing the Left-Mouse-Button the viewing-angle/perspective can be changed by moving the mouse
 
 -You can go up by clicking the "SPACE bar" or go down with the "CTRL" key
 
