@@ -24,7 +24,7 @@
 
 
 //Camera
-Camera camera(glm::vec3(5.0f, 5.0f, 10.0f));
+Camera camera(glm::vec3(0.0f, 5.0f, 5.0f));
 
 //Time parameters
 double deltaTime = 0.0;
@@ -192,7 +192,7 @@ int setupDependencies()
     #endif
 
 	//Create the window object
-	window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "OpenGL Window", NULL, NULL);
+	window = glfwCreateWindow(SCR_WIDTH/2, SCR_HEIGHT/2, "OpenGL Window", NULL, NULL);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create the window" << std::endl;
@@ -290,12 +290,18 @@ int main()
 	setupDependencies();
     
     GLuint quad = screenSizeQuad();
-    Scene scene;
-    scene.shader = Shader("Shaders/scene1/scene1_vertex.glsl",
-                           "Shaders/scene1/scene1_fragment.glsl");
+    Scene scene, buildingScene,fractalScene,terrainScene,tileScene;
     
-    std::vector<const char*> texturePaths =
-    {
+    buildingScene.shader = Shader("Shaders/scene1/scene1_vertex.glsl",
+                           "Shaders/scene1/scene1_fragment.glsl");
+    fractalScene.shader = Shader("Shaders/scene2/scene2_vertex.glsl",
+                           "Shaders/scene2/scene2_fragment.glsl");
+    terrainScene.shader = Shader("Shaders/scene3/scene3_vertex.glsl",
+                           "Shaders/scene3/scene3_fragment.glsl");
+    tileScene.shader = Shader("Shaders/scene4/scene4_vertex.glsl",
+                           "Shaders/scene4/scene4_fragment.glsl");
+    
+    std::vector<const char*> buildingTexturePaths ={
         "textures/hex.png",  //floor
         "textures/white_marble1.png", //walls
         "textures/roof/texture3.jpg", //roof
@@ -304,9 +310,19 @@ int main()
         "textures/roof/height3.png" // roof bump
     };
     
-    scene.loadTextures(texturePaths);
+    std::vector<const char*> terrainTexturePaths ={
+        "textures/perlinNoise3.jpeg",
+    };
+    
+    std::vector<const char*> tileTexturePaths ={
+        "textures/perlinNoise3.jpeg",
+    };
+    
+    buildingScene.loadTextures(buildingTexturePaths);
+    terrainScene.loadTextures(terrainTexturePaths);
+    tileScene.loadTextures(tileTexturePaths);
+    scene = tileScene;
    
-     
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
