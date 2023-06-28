@@ -22,5 +22,11 @@
 
 - The program can be terminated with the ESC key
 
+# Blog Link
+
+We have written a blog for our project. You can find the visual outputs and a video showcasing the results. 
+
+The blog link: https://ceng469termproject.blogspot.com/
+
 # TODO
 - Add a ImGUI drop down menu to select the scene as selecting the scene by changing the code is not a good idea. 
