@@ -2,22 +2,25 @@
 Ömer Köse - Gökcan Demiralp
 
 # Compile and Run
--Just by running the Makefile by using the regular "make" command the files compile
+- Just by running the Makefile by using the regular "make" command the files compile
 
--After that, the executable can be run with the usual "./main" command
+- After that, the executable can be run with the usual "./main" command
 
 # Change the Scene
--Then the hard-coded scene which is specified in the main.cpp file will be executed
+- Then the hard-coded scene which is specified in the main.cpp file will be executed
 
--At the line "318" in "main.cpp" the scene can be changed
+- At the line "318" in "main.cpp" the scene can be changed
 
--for example "scene = terrainScene;" can be changed to "scene = buildingScene;"
+- for example "scene = terrainScene;" can be changed to "scene = buildingScene;"
 
 # Controls
--The camera can be moved inside the scene by using the "WASD" keys
+- The camera can be moved inside the scene by using the "WASD" keys
 
--While pressing the Left-Mouse-Button the viewing-angle/perspective can be changed by moving the mouse
+- While pressing the Left-Mouse-Button the viewing-angle/perspective can be changed by moving the mouse
 
--You can go up by clicking the "SPACE bar" or go down with the "CTRL" key
+- You can go up by clicking the "SPACE bar" or go down with the "CTRL" key
 
--The program can be terminated with the ESC key
+- The program can be terminated with the ESC key
+
+# TODO
+- Add a ImGUI drop down menu to select the scene as selecting the scene by changing the code is not a good idea. 
